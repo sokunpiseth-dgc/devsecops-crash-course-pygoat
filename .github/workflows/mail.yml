@@ -1,5 +1,11 @@
 version: 0.2
-
+on:
+  push:
+    paths-ignore:
+      - '**/*.md'
+      - '**/*.txt'
+  workflow_dispatch:
+  
 phases:
   install:
     runtime-versions:
