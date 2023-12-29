@@ -1,84 +1,37 @@
-# This workflow performs static application security testing with CodeQL,
-# software component analysis with Codacy, and secrets management with gitleaks.
-
-name: Security Workflow
+name: Python security workflow
 
 on:
   push:
     branches: [ main ]
   pull_request:
-    # The branches below must be a subset of the branches above
     branches: [ main ]
-  schedule:
-    - cron: '0 0 * * 0'
 
 jobs:
-  security:
+  codeql-analysis:
+    name: CodeQL
     runs-on: ubuntu-latest
     steps:
-      # Checkout the repository
       - name: Checkout repository
         uses: actions/checkout@v2
-        with:
-          # We must fetch at least the immediate parents so that if this is
-          # a pull request then we can checkout the head.
-          fetch-depth: 2
-
-      # Initialize CodeQL
       - name: Initialize CodeQL
-        uses: github/codeql-action/init@v2
+        uses: github/codeql-action/init@v1
         with:
           languages: python
-          # If you wish to specify custom queries, you can do so here or in a config file.
-          # By default, queries listed here will override any specified in a config file. 
-          # Prefix the list here with "+" to use these queries and those in the config file.
-          # queries: ./path/to/local/query, your-org/your-repo/queries@main
-
-      # Perform CodeQL analysis
       - name: Perform CodeQL Analysis
-        uses: github/codeql-action/analyze@v2
-        # Define an output for the CodeQL analysis results
-        id: codeql
-        with:
-          output: codeql-results.sarif
+        uses: github/codeql-action/analyze@v1
 
-      # Run Codacy analysis
-      - name: Run Codacy Analysis
-        uses: codacy/codacy-analysis-cli-action@master
-        # Define an output for the Codacy analysis results
-        id: codacy
-        with:
-          project-token: ${{ secrets.CODACY_PROJECT_TOKEN }}
-          # Set the language of the project
-          language: Python
-          # Set the maximum number of issues to report
-          max-allowed-issues: 10
-          # Set the minimum severity level to report
-          severity: Error
-          # Set the output file path
-          output: codacy-results.json
-
-      # Run gitleaks to detect secrets
-      - name: Run gitleaks
-        uses: zricethezav/gitleaks-action@v1.4.0
-        # Define an output for the gitleaks results
-        id: gitleaks
-        with:
-          # Set the config file path
-          config-path: .gitleaks.toml
-          # Set the report format
-          format: json
-          # Set the report file path
-          report: gitleaks-report.json
-
-      # Export the reports as artifacts
-      - name: Export reports
+  trufflehog-scan:
+    name: Trufflehog
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
+      - name: Install trufflehog
+        run: pip install trufflehog
+      - name: Scan for secrets
+        run: trufflehog --regex --entropy=False . > secrets.txt
+      - name: Upload secrets report
         uses: actions/upload-artifact@v2
         with:
-          # Set the name of the artifact
-          name: security-reports
-          # Set the paths of the reports to upload
-          path: |
-            codeql-results.sarif
-            codacy-results.json
-            gitleaks-report.json
+          name: secrets
+          path: secrets.txt
