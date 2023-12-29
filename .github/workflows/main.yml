@@ -26,7 +26,7 @@ jobs:
 
       # Initialize CodeQL
       - name: Initialize CodeQL
-        uses: github/codeql-action/init@v1
+        uses: github/codeql-action/init@v2
         with:
           languages: python
           # If you wish to specify custom queries, you can do so here or in a config file.
@@ -36,7 +36,7 @@ jobs:
 
       # Perform CodeQL analysis
       - name: Perform CodeQL Analysis
-        uses: github/codeql-action/analyze@v1
+        uses: github/codeql-action/analyze@v2
 
       # Run Codacy analysis
       - name: Run Codacy Analysis
