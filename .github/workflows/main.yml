@@ -1,39 +1,62 @@
-# .github/workflows/security_checks.yml
+# This workflow performs static application security testing with CodeQL,
+# software component analysis with Codacy, and secrets management with gitleaks.
 
-name: Security Checks
+name: Security Workflow
 
 on:
   push:
-    branches:
-      - main  # Modify to your main branch name
+    branches: [ main ]
+  pull_request:
+    # The branches below must be a subset of the branches above
+    branches: [ main ]
   schedule:
-    - cron: '0 0 * * *'  # Set your desired schedule (runs daily at midnight)
+    - cron: '0 0 * * 0'
 
 jobs:
-  security_checks_job:
-    runs-on: ubuntu-latest  # Choose your preferred runner
-
+  security:
+    runs-on: ubuntu-latest
     steps:
-      - name: Checkout code
+      # Checkout the repository
+      - name: Checkout repository
         uses: actions/checkout@v2
-
-      - name: Set up Python
-        uses: actions/setup-python@v2
         with:
-          python-version: '3.x'  # Set your desired Python version
+          # We must fetch at least the immediate parents so that if this is
+          # a pull request then we can checkout the head.
+          fetch-depth: 2
 
-      - name: Set up CodeQL
-        uses: github/codeql-action/init@v2
+      # Initialize CodeQL
+      - name: Initialize CodeQL
+        uses: github/codeql-action/init@v1
+        with:
+          languages: python
+          # If you wish to specify custom queries, you can do so here or in a config file.
+          # By default, queries listed here will override any specified in a config file. 
+          # Prefix the list here with "+" to use these queries and those in the config file.
+          # queries: ./path/to/local/query, your-org/your-repo/queries@main
 
-      - name: Run CodeQL analysis
-        run: |
-          codeql database create python-code --language=python --source-root=. --output=python-database
-          codeql database analyze python-database --output=results/codeql_report
-          
-      - name: Software Component Analysis
-        run: |
-          sca_tool analyze python-project --output=results/sca_report
+      # Perform CodeQL analysis
+      - name: Perform CodeQL Analysis
+        uses: github/codeql-action/analyze@v1
 
-      - name: Secrets Scanning
-        run: |
-          secret_tool scan python-code --output=results/secrets_report
+      # Run Codacy analysis
+      - name: Run Codacy Analysis
+        uses: codacy/codacy-analysis-cli-action@master
+        with:
+          project-token: ${{ secrets.CODACY_PROJECT_TOKEN }}
+          # Set the language of the project
+          language: Python
+          # Set the maximum number of issues to report
+          max-allowed-issues: 10
+          # Set the minimum severity level to report
+          severity: Error
+
+      # Run gitleaks to detect secrets
+      - name: Run gitleaks
+        uses: zricethezav/gitleaks-action@v1.4.0
+        with:
+          # Set the config file path
+          config-path: .gitleaks.toml
+          # Set the report format
+          format: json
+          # Set the report file path
+          report: gitleaks-report.json
