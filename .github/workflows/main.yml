@@ -37,10 +37,16 @@ jobs:
       # Perform CodeQL analysis
       - name: Perform CodeQL Analysis
         uses: github/codeql-action/analyze@v2
+        # Define an output for the CodeQL analysis results
+        id: codeql
+        with:
+          output: codeql-results.sarif
 
       # Run Codacy analysis
       - name: Run Codacy Analysis
         uses: codacy/codacy-analysis-cli-action@master
+        # Define an output for the Codacy analysis results
+        id: codacy
         with:
           project-token: ${{ secrets.CODACY_PROJECT_TOKEN }}
           # Set the language of the project
@@ -49,10 +55,14 @@ jobs:
           max-allowed-issues: 10
           # Set the minimum severity level to report
           severity: Error
+          # Set the output file path
+          output: codacy-results.json
 
       # Run gitleaks to detect secrets
       - name: Run gitleaks
         uses: zricethezav/gitleaks-action@v1.4.0
+        # Define an output for the gitleaks results
+        id: gitleaks
         with:
           # Set the config file path
           config-path: .gitleaks.toml
@@ -60,3 +70,15 @@ jobs:
           format: json
           # Set the report file path
           report: gitleaks-report.json
+
+      # Export the reports as artifacts
+      - name: Export reports
+        uses: actions/upload-artifact@v2
+        with:
+          # Set the name of the artifact
+          name: security-reports
+          # Set the paths of the reports to upload
+          path: |
+            codeql-results.sarif
+            codacy-results.json
+            gitleaks-report.json
