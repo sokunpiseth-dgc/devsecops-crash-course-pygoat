@@ -17,10 +17,13 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v2
 
-      - name: Set up CodeQL
-        uses: github/codeql-action/setup@v1
+      - name: Set up Python
+        uses: actions/setup-python@v2
         with:
-          languages: python
+          python-version: '3.x'  # Set your desired Python version
+
+      - name: Set up CodeQL
+        uses: github/codeql-action/init@v1
 
       - name: Run CodeQL analysis
         run: |
