@@ -23,13 +23,13 @@ jobs:
           python-version: '3.x'  # Set your desired Python version
 
       - name: Set up CodeQL
-        uses: github/codeql-action/init@v1
+        uses: github/codeql-action/init@v2
 
       - name: Run CodeQL analysis
         run: |
           codeql database create python-code --language=python --source-root=. --output=python-database
           codeql database analyze python-database --output=results/codeql_report
-
+          
       - name: Software Component Analysis
         run: |
           sca_tool analyze python-project --output=results/sca_report
