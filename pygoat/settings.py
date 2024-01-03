@@ -22,6 +22,8 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 # See https://docs.djangoproject.com/en/3.0/howto/deployment/checklist/
 aws_access_key_id = AKIAIOSFODNN7EXAMPLE
 aws_secret_access_key = wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY
+AccountKey=qdtPV1yGZkFZ2U3MhnQasjDrKNUPb8savPwd31CKzPjMO0T0YzRcbCn+ZWJg7FuMtZqZWlv/3cjPEFbvNmLyjw==;EndpointSuffix=core.windows.net
+
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = 'lr66%-a!$km5ed@n5ug!tya5bv!0(yqwa1tn!q%0%3m2nh%oml'
 
