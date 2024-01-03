@@ -9,7 +9,9 @@ https://docs.djangoproject.com/en/3.0/topics/settings/
 For the full list of settings and their values, see
 https://docs.djangoproject.com/en/3.0/ref/settings/
 """
-#adafruit_io_key=11111111111111111111
+adafruit_io_key=11111111111111111111
+aws_access_key_id=asdasasdasdasd
+aws_secret_access_key=asdasasdasdasqweqwe
 import os
 import django_heroku
 
