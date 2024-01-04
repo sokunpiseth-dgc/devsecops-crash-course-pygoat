@@ -1,0 +1,18 @@
+name: SAST
+on:
+  push:
+    branches: [ main ]
+jobs:
+  sast:
+    runs-on: ubuntu-latest
+    # Steps define the order in which the tasks will be executed
+    steps:
+       # Checks-out the repository so our job can access it
+      - uses: actions/checkout@v2
+      - name: Install pip detect-secrets
+        run: |
+          pip install bandit
+      - name: Scan SASAT repository for python
+        run: |
+          # scripts to scan repository for new secrets
+          bandit -r ${{ github.workspace }}
