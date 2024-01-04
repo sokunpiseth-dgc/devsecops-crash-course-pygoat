@@ -12,7 +12,13 @@ jobs:
       - name: Install pip detect-secrets
         run: |
           pip install bandit
-      - name: Scan SASAT repository for python
+      - name: Scan SAST repository for python
         run: |
           # scripts to scan repository for new secrets
-          bandit -r ${{ github.workspace }}
+          bandit -r ${{ github.workspace }} -f json -o python-SAST.json
+     # Upload Artifacts
+      - name: Upload the SST scan output
+        uses: actions/upload-artifact@v2
+        with:
+          name: scan_results
+          path: python-SAST.json
