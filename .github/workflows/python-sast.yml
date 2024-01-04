@@ -3,9 +3,9 @@ on:
   push:
     branches: [ main ]
 jobs:
-  continue-on-error: true
   sast:
     runs-on: ubuntu-latest
+    continue-on-error: true
     # Steps define the order in which the tasks will be executed
     steps:
        # Checks-out the repository so our job can access it
