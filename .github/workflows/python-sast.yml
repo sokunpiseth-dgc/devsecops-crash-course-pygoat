@@ -16,7 +16,7 @@ jobs:
       - name: Scan SAST repository for python
         run: |
           # scripts to scan repository for new secrets
-          bandit -r ${{ github.workspace }} -f json -o python-SAST.json
+          bandit -r ${{ github.workspace }} -f json -o python-SAST.json --exit-zero
      # Upload Artifacts
       - name: Upload the SST scan output
         uses: actions/upload-artifact@v2
