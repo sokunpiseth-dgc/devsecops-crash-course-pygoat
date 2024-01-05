@@ -1,12 +1,21 @@
+name: Matrix Language Jobs
 on:
-  push:
-    branches: [ main ]
+  workflow_dispatch:
+
 jobs:
   run:
     runs-on: ubuntu-latest
     steps:
       - uses: austenstone/list-repository-languages@main
         id: list-languages
-      - name: Check if Python
-        if: contains(fromJSON(steps.list-languages.outputs.languages), 'Javascript')
-        run: echo "This repository contains Python code."
+    outputs:
+      languages: ${{ steps.list-languages.outputs.languages }}
+
+  print:
+    needs: [run]
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        language: ${{ fromJSON(needs.run.outputs.languages) }}
+    steps:
+      - run: echo ${{ matrix.language }}
