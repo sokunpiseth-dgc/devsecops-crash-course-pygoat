@@ -8,5 +8,5 @@ jobs:
       - uses: austenstone/list-repository-languages@main
         id: list-languages
       - name: Check if Python
-        if: contains(fromJSON(steps.list-languages.outputs.languages), 'Python')
+        if: contains(fromJSON(steps.list-languages.outputs.languages), 'Javascript')
         run: echo "This repository contains Python code."
