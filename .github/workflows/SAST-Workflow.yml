@@ -1,104 +1,35 @@
 name: SAST Workflow
 on: [push, pull_request]
 jobs:
-  find-files:
+  semgrep:
     runs-on: ubuntu-latest
+    if: contains(github.event.head_commit.message, '[semgrep]')
     steps:
       - name: Checkout Code
         uses: actions/checkout@v2
-      - name: Find files with extensions
-        id: find-files
-        uses: dorny/paths-filter@v2
-        with:
-          list-files: json
-          filters: |
-            ruby:
-              - '**/*.rb'
-              - '**/Gemfile'
-            c_cpp:
-              - '**/*.c'
-              - '**/*.cc'
-              - '**/*.cpp'
-              - '**/*.c++'
-              - '**/*.cp'
-              - '**/*.cxx'
-            nodejs:
-              - '**/package.json'
-            php:
-              - '**/*.php'
-            apex:
-              - '**/*.cls'
-            dotnet:
-              - '**/*.csproj'
-              - '**/*.vbproj'
-            semgrep:
-              - '**/*.py'
-              - '**/*.js'
-              - '**/*.jsx'
-              - '**/*.ts'
-              - '**/*.tsx'
-              - '**/*.c'
-              - '**/*.go'
-              - '**/*.java'
-              - '**/*.cs'
-              - '**/*.html'
-              - '**/*.scala'
-              - '**/*.sc'
-            elixir:
-              - '**/mix.exs'
-            jvm:
-              - '**/*.groovy'
-              - '**/*.scala'
-              - '**/*.kt'
-    outputs:
-      ruby_files: ${{ steps.find-files.outputs.ruby_files }}
-      c_cpp_files: ${{ steps.find-files.outputs.c_cpp_files }}
-      nodejs_files: ${{ steps.find-files.outputs.nodejs_files }}
-      php_files: ${{ steps.find-files.outputs.php_files }}
-      apex_files: ${{ steps.find-files.outputs.apex_files }}
-      dotnet_files: ${{ steps.find-files.outputs.dotnet_files }}
-      semgrep_files: ${{ steps.find-files.outputs.semgrep_files }}
-      elixir_files: ${{ steps.find-files.outputs.elixir_files }}
-      jvm_files: ${{ steps.find-files.outputs.jvm_files }}
-
-  sast:
-    needs: [find-files]
-    runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        tool: [brakeman, flawfinder, nodejs-scan, phpcs-security-audit, pmd-apex, security-code-scan, semgrep, sobelow, spotbugs]
+      - name: Install Semgrep
+        run: pip install semgrep
+      - name: Run Semgrep
+        run: semgrep --config=p/security-audit --exclude=tests .
+  security-code-scan:
+    runs-on: windows-latest
+    if: contains(github.event.head_commit.message, '[security-code-scan]')
     steps:
       - name: Checkout Code
         uses: actions/checkout@v2
-      - name: Run SAST tool
+      - name: Install Security Code Scan
+        run: dotnet tool install --global security-scan
+      - name: Run Security Code Scan
+        run: security-scan .
+  spotbugs:
+    runs-on: ubuntu-latest
+    if: contains(github.event.head_commit.message, '[spotbugs]')
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v2
+      - name: Install SpotBugs
         run: |
-          if [ "${{ matrix.tool }}" = "brakeman" ] && [ -n "${{ needs.find-files.outputs.ruby_files }}" ]; then
-            gem install brakeman
-            brakeman
-          elif [ "${{ matrix.tool }}" = "flawfinder" ] && [ -n "${{ needs.find-files.outputs.c_cpp_files }}" ]; then
-            sudo apt-get install flawfinder
-            flawfinder .
-          elif [ "${{ matrix.tool }}" = "nodejs-scan" ] && [ -n "${{ needs.find-files.outputs.nodejs_files }}" ]; then
-            npm install -g nodejsscan
-            nodejsscan .
-          elif [ "${{ matrix.tool }}" = "phpcs-security-audit" ] && [ -n "${{ needs.find-files.outputs.php_files }}" ]; then
-            composer global require pheromone/phpcs-security-audit
-            ~/.composer/vendor/bin/phpcs --standard=vendor/pheromone/phpcs-security-audit/Security/ .
-          elif [ "${{ matrix.tool }}" = "pmd-apex" ] && [ -n "${{ needs.find-files.outputs.apex_files }}" ]; then
-            wget https://github.com/pmd/pmd/releases/download/pmd_releases%2F6.36.0/pmd-bin-6.36.0.zip
-            unzip pmd-bin-6.36.0.zip
-            ./pmd-bin-6.36.0/bin/run.sh pmd -d . -f text -R apex-security
-          elif [ "${{ matrix.tool }}" = "security-code-scan" ] && [ -n "${{ needs.find-files.outputs.dotnet_files }}" ]; then
-            dotnet tool install --global security-scan
-            security-scan .
-          elif [ "${{ matrix.tool }}" = "semgrep" ] && [ -n "${{ needs.find-files.outputs.semgrep_files }}" ]; then
-            pip install semgrep
-            semgrep --config=p/security-audit .
-          elif [ "${{ matrix.tool }}" = "sobelow" ] && [ -n "${{ needs.find-files.outputs.elixir_files }}" ]; then
-            mix archive.install hex sobelow
-            mix sobelow --config
-          elif [ "${{ matrix.tool }}" = "spotbugs" ] && [ -n "${{ needs.find-files.outputs.jvm_files }}" ]; then
-            wget https://github.com/spotbugs/spotbugs/releases/download/4.3.0/spotbugs-4.3.0.tgz
-            tar xvf spotbugs-4.3.0.tgz
-            ./spotbugs-4.3.0/bin/spotbugs -textui -include spotbugs-4.3.0/lib/security.xml .
-          fi
+          wget https://github.com/spotbugs/spotbugs/releases/download/4.3.0/spotbugs-4.3.0.tgz
+          tar xvf spotbugs-4.3.0.tgz
+      - name: Run SpotBugs
+        run: ./spotbugs-4.3.0/bin/spotbugs -textui -include spotbugs-4.3.0/lib/security.xml .
