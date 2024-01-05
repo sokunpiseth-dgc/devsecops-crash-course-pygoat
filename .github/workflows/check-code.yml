@@ -11,11 +11,23 @@ jobs:
     outputs:
       languages: ${{ steps.list-languages.outputs.languages }}
 
-  print:
+  python-action:
     needs: [run]
     runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        language: ${{ fromJSON(needs.run.outputs.languages) }}
-    steps:
-      - run: echo ${{ matrix.language }}
+    if: contains(fromJSON(needs.run.outputs.languages), 'Python')
+    steps:       
+    # Checks-out the repository so our job can access it
+      - uses: actions/checkout@v2
+      - name: Install pip detect-secrets
+        run: |
+          pip install bandit
+      - name: Scan SAST repository for python
+        run: |
+          # scripts to scan repository for new secrets
+          bandit -r ${{ github.workspace }} -f json -o python-SAST.json --exit-zero
+     # Upload Artifacts
+      - name: Upload the SST scan output
+        uses: actions/upload-artifact@v2
+        with:
+          name: scan_results
+          path: python-SAST.json
