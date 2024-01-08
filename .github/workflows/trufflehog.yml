@@ -16,7 +16,7 @@ jobs:
       uses: trufflesecurity/trufflehog@main
       with:
         path: ${{ github.workspace }}
-        extra_args: --json > trufflehog-result.json
+        extra_args: --json
       # Upload Artifacts
     - name: Upload whispers scan output
       uses: actions/upload-artifact@v2
