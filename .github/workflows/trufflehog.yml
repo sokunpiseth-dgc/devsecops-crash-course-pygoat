@@ -15,8 +15,8 @@ jobs:
     - name: Secret Scanning
       uses: trufflesecurity/trufflehog@main
       with:
-        path: devsecops-crash-course-pygoat
-        extra_args: --json trufflehog-result.json
+        path: ${{ github.workspace }}
+        extra_args: --json > trufflehog-result.json
       # Upload Artifacts
     - name: Upload whispers scan output
       uses: actions/upload-artifact@v2
