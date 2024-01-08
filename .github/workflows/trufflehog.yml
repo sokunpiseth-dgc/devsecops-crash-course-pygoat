@@ -10,14 +10,12 @@ jobs:
     steps:
     - name: Checkout code
       uses: actions/checkout@v4
-      with:
-        fetch-depth: 0
-    - name: Secret Scanning
-      uses: trufflesecurity/trufflehog@main
-      with:
-        path: ${{ github.workspace }}
-        extra_args: --json
-      # Upload Artifacts
+    - name: Install trufflehog Secret Scanning 
+      run: |
+          curl -sSfL https://raw.githubusercontent.com/trufflesecurity/trufflehog/main/scripts/install.sh | sh -s -- -b /usr/local/bin
+    - name: Secret Scanning 
+      run: |
+          trufflehog filesystem ${{ github.workspace } -j > trufflehog-result.json
     - name: Upload whispers scan output
       uses: actions/upload-artifact@v2
       with:
