@@ -21,3 +21,4 @@ jobs:
       with:
         name: trufflehog-result
         path: trufflehog-result.json
+
